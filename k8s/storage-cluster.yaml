@@ -1,0 +1,32 @@
+apiVersion: coherence.oracle.com/v1
+kind: Coherence
+metadata:
+  name: student-storage
+spec:
+  annotations:
+    openshift.io/scc: anyuid
+  image: coherence-example-storage:1.0.0-SNAPSHOT
+  jvm:
+    args:
+      - -Doracle.db.host=oracledb.oracle.svc
+      - -Doracle.db.port=1521
+      - -Doracle.db.sid=ORCLPDB1
+      - -Doracle.db.user=College
+      - -Doracle.db.pwd=Coherence2020
+  coherence:
+    metrics:
+      enabled: true
+    management:
+      enabled: true
+  ports:
+    - name: metrics
+      port: 9612
+      serviceMonitor:
+        enabled: true
+    - name: management
+      port: 30000
+    - name: extend
+      port: 20000
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10

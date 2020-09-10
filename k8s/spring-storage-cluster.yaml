@@ -1,0 +1,36 @@
+apiVersion: coherence.oracle.com/v1
+kind: Coherence
+metadata:
+  name: student-storage
+spec:
+  annotations:
+    openshift.io/scc: anyuid
+  image: coherence-example-spring-storage:1.0.0-SNAPSHOT
+  env:
+  - name: ORACLE_DB_HOST
+    value: oracledb.oracle.svc
+  - name: ORACLE_DB_PORT
+    value: 1521
+  - name: ORACLE_DB_SID
+    value: ORCLPDB1
+  - name: ORACLE_DB_USER
+    value: College
+  - name: ORACLE_DB_PASSWORD
+    value: Coherence2020
+  coherence:
+    metrics:
+      enabled: true
+    management:
+      enabled: true
+  ports:
+    - name: metrics
+      port: 9612
+      serviceMonitor:
+        enabled: true
+    - name: management
+      port: 30000
+    - name: extend
+      port: 20000
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10

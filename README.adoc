@@ -233,4 +233,169 @@ Date: Thu, 10 Sep 2020 14:10:51 GMT
 
 === Running in Kubernetes
 
-TBD...
+To run in Kubernetes you still require an Oracle Database as with the Docker example.
+Again, a simple solution is to run the Oracle DB image in k8s.
+
+As before there are two choices for storage, the plain JDBC storage or the Spring Boot JPA storage, CHOOSE ONLY ONE.
+
+First make sure the Coherence Operator is installed, as this will be required to run the storage cluster.
+
+==== Start the JDBC Storage Cluster
+
+The following yaml can be used to create a storage cluster using the image built from this project.
+[Source,yaml]
+.k8s/storage-cluster.yaml
+----
+apiVersion: coherence.oracle.com/v1
+kind: Coherence
+metadata:
+  name: student-storage
+spec:
+  annotations:
+    openshift.io/scc: anyuid
+  image: coherence-example-storage:1.0.0-SNAPSHOT
+  jvm:
+    args:
+      - -Doracle.db.host=oracledb.oracle.svc
+      - -Doracle.db.port=1521
+      - -Doracle.db.sid=ORCLPDB1
+      - -Doracle.db.user=College
+      - -Doracle.db.pwd=Coherence2020
+  coherence:
+    metrics:
+      enabled: true
+    management:
+      enabled: true
+  ports:
+    - name: metrics
+      port: 9612
+      serviceMonitor:
+        enabled: true
+    - name: management
+      port: 30000
+    - name: extend
+      port: 20000
+----
+
+The yaml above is in the ./k8s/storage-cluster.yaml[] file.
+Create the storage cluster with the following command:
+[Source,bash]
+----
+kubectl create -f ./k8s/storage-cluster.yaml
+----
+
+==== Start the Spring Boot Storage Cluster
+
+The following yaml can be used to create the Spring Boot storage cluster using the image built from this project.
+[Source,yaml]
+.k8s/spring-storage-cluster.yaml
+----
+apiVersion: coherence.oracle.com/v1
+kind: Coherence
+metadata:
+  name: student-storage
+spec:
+  annotations:
+    openshift.io/scc: anyuid
+  image: coherence-example-spring-storage:1.0.0-SNAPSHOT
+  env:
+  - name: ORACLE_DB_HOST
+    value: oracledb.oracle.svc
+  - name: ORACLE_DB_PORT
+    value: 1521
+  - name: ORACLE_DB_SID
+    value: ORCLPDB1
+  - name: ORACLE_DB_USER
+    value: College
+  - name: ORACLE_DB_PASSWORD
+    value: Coherence2020
+  coherence:
+    metrics:
+      enabled: true
+    management:
+      enabled: true
+  ports:
+    - name: metrics
+      port: 9612
+      serviceMonitor:
+        enabled: true
+    - name: management
+      port: 30000
+    - name: extend
+      port: 20000
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+----
+
+The yaml above is in the ./k8s/storage-cluster.yaml[] file.
+Create the storage cluster with the following command:
+[Source,bash]
+----
+kubectl create -f ./k8s/spring-storage-cluster.yaml
+----
+
+==== Start the Student REST Service
+
+To start the Spring Boot REST Service use the following yaml:
+[Source,yaml]
+.k8s/spring-storage-cluster.yaml
+----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: students-application
+  labels:
+    app: students
+spec:
+  selector:
+    matchLabels:
+      app: students
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: students
+    spec:
+      containers:
+      - name: students
+        image: rest-service:1.0.0-SNAPSHOT
+        env:
+        - name: JAVA_TOOL_OPTIONS
+          value: "-Dextend.host=student-storage-extend.sbi.svc"
+        ports:
+        - name: rest
+          containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: students
+spec:
+ type: NodePort
+ selector:
+   app: students
+ ports:
+   - name: rest
+     protocol: TCP
+     port: 8080
+     targetPort: rest
+     nodePort: 30080
+----
+
+The yaml above will create a Deployment to run the application and a Service to expose the REST endpoint.
+This example uses a Service with a type of NodePort, which works well locally in Docker.
+If you want to expose the port externally change the Service type from `NodePort` to `LoadBalancer`.
+
+Create the REST service with the following command:
+[Source,bash]
+----
+kubectl create -f ./k8s/rest-service.yaml
+----
+
+When the service starts the REST endpoint will be reachable on port 30080 on the node or load balancer.
+
+
+
+
