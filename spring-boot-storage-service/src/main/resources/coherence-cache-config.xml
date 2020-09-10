@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<cache-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://xmlns.oracle.com/coherence/coherence-cache-config"
+              xsi:schemaLocation="http://xmlns.oracle.com/coherence/coherence-cache-config coherence-cache-config.xsd">
+
+    <defaults>
+        <serializer>pof</serializer>
+    </defaults>
+
+    <caching-scheme-mapping>
+        <cache-mapping>
+            <cache-name>*</cache-name>
+            <scheme-name>db-scheme</scheme-name>
+        </cache-mapping>
+    </caching-scheme-mapping>
+
+    <caching-schemes>
+
+        <distributed-scheme>
+            <scheme-name>db-scheme</scheme-name>
+            <service-name>StorageService</service-name>
+            <backing-map-scheme>
+                <read-write-backing-map-scheme>
+                    <internal-cache-scheme>
+                        <local-scheme/>
+                    </internal-cache-scheme>
+                    <cachestore-scheme>
+                        <class-scheme>
+                            <class-factory-name>com.oracle.coherence.examples.storage.CacheStoreFactory</class-factory-name>
+                            <method-name>createCacheStore</method-name>
+                            <init-params>
+                                <init-param>
+                                    <param-type>java.lang.String</param-type>
+                                    <param-value>{cache-name}</param-value>
+                                </init-param>
+                                <init-param>
+                                  <param-type>com.tangosol.net.BackingMapManagerContext</param-type>
+                                  <param-value>{manager-context}</param-value>
+                                </init-param>
+                            </init-params>
+                        </class-scheme>
+                    </cachestore-scheme>
+                </read-write-backing-map-scheme>
+            </backing-map-scheme>
+            <autostart>true</autostart>
+        </distributed-scheme>
+
+        <!-- proxy scheme that allows extend clients to connect to the cluster over TCP/IP -->
+        <proxy-scheme>
+          <service-name>Proxy</service-name>
+          <acceptor-config>
+            <tcp-acceptor>
+              <local-address>
+
+                <address system-property="coherence.extend.address">0.0.0.0</address>
+                <port system-property="coherence.extend.port">20000</port>
+              </local-address>
+            </tcp-acceptor>
+          </acceptor-config>
+          <autostart>true</autostart>
+        </proxy-scheme>
+    </caching-schemes>
+</cache-config>

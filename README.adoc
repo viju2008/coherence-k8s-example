@@ -1,0 +1,236 @@
+= Coherence Spring Boot Kubernetes Example
+
+This repository is an example of running a simple Spring Boot Coherence application in Kubernetes.
+
+There are a number of parts to this example, each of the modules is a separate Maven projects.
+The reason for this is that in the real world each of those modules could be built by a separate development team.
+Each module may have a different development and deployment lifecycle.
+
+* Domain Classes `domain-model/` directory. This is a very simple module that just contains the domain classes
+(`Student` and `Address`) used by the example.
+These classes have been annotated with Coherence POF annotations. During the build the POF Maven plugin will instrument
+the classes to make the properly implement evolvable portable objects.
+The classes have also been annotated with JPA annotations so that they can be stored in a database.
+This module is used by the other modules that require these domain classes.
+
+* Storage Service `storage-service` directory. This is the Coherence storage enabled cluster service.
+This module provides caches using `CacheStore` implementations to read from and write to the database.
+The cache stores use plain jdbc code to access the database.
+
+* Spring Boot Storage Service `spring-boot-storage-service` directory. This module provides the same functionality as
+the Storage Service but has been written as a Spring Boot application that uses JPA in the Cache Stores.
+
+* Student REST Service `rest-service` directory. This is a Spring Boot REST application that provides REST endpoints
+to perform CRUD operations on Students. This application is a Coherence Extend client application that connects
+to the storage service.
+
+
+== Build the Examples
+
+The examples are Maven projects and should be build with the following commands in this order:
+
+Domain Classes
+[source,bash]
+----
+./mvnw clean install -DskipTests -f domain-model/
+----
+
+Storage Service
+[source,bash]
+----
+./mvnw clean install -DskipTests -f storage-service/
+----
+
+Spring Boot Storage Service
+----
+./mvnw clean install -DskipTests -f spring-boot-storage-service/
+----
+
+REST Service
+----
+./mvnw clean install spring-boot:build-image -DskipTests -f rest-service/
+----
+
+
+== Running the Example
+
+This example requires an Oracle database to connect to.
+One way to do this for testing is use the Oracle DB Docker image on Oracle Container Registry, which is simple to
+start and throw away afterward.
+
+The following database details will be required:
+* The host name to use to connect to the database
+* The port to use to connect to the database
+* The database SID
+* The user name to use to connect to the database
+* The password to use to connect to the database
+
+The user must have tables in schema like the ones below:
+
+[Source,sql]
+----
+CREATE USER College IDENTIFIED BY Coherence2020;
+
+GRANT CONNECT, RESOURCE, DBA TO College;
+
+DROP TABLE COLLEGE.ADDRESS;
+DROP TABLE COLLEGE.STUDENT;
+
+CREATE TABLE COLLEGE.ADDRESS
+(
+    ROLL VARCHAR2(255 char) NOT NULL PRIMARY KEY,
+    LINE_ONE VARCHAR2(255 char),
+    LINE_TWO VARCHAR2(255 char),
+    CITY VARCHAR2(255 char),
+    POSTAL_CODE VARCHAR2(255 char),
+    COUNTRY VARCHAR2(255 char)
+);
+
+CREATE TABLE COLLEGE.STUDENT
+(
+	ROLL VARCHAR2(255 char) NOT NULL PRIMARY KEY,
+    FIRST_NAME VARCHAR2(255 char),
+   	LAST_NAME VARCHAR2(255 char),
+	CLASS_NAME VARCHAR2(255 char),
+	ADDRESS_ROLL VARCHAR2(255 char)
+		CONSTRAINT STUDENT_ADDRESS
+			REFERENCES COLLEGE.ADDRESS
+);
+----
+
+
+The different modules can be run in Docker or in Kubernetes.
+
+=== Running in Docker
+
+First start the Coherence storage application.
+Choose whether you want to run the plain JDBC storage application or the Spring Boot storage application,
+ONLY RUN ONE OF THEM.
+
+==== Run the JDBC Storage Application
+
+Run the command below after changing the System properties `oracle.db.host`, `oracle.db.port`, `oracle.db.sid`,
+`oracle.db.user`, `oracle.db.pwd` to match with the values required for your database.
+
+[Source,bash]
+----
+docker run -d -p 20000:20000 \
+    -e JAVA_TOOL_OPTIONS='-Doracle.db.host=192.168.1.33 -Doracle.db.port=31521 -Doracle.db.sid=ORCLPDB1 -Doracle.db.user=College -Doracle.db.pwd=Coherence2020' \
+    --name storage coherence-example-storage:1.0.0-SNAPSHOT
+----
+
+
+Run the command below after changing the environment variables to the values required for your database.
+
+==== Run the Spring Boot Storage Application
+[Source,bash]
+----
+docker run -it --rm -p 20000:20000 \
+    -e ORACLE_DB_HOST=192.168.1.33 -e ORACLE_DB_PORT=31521 \
+    -e ORACLE_DB_SID=ORCLPDB1 -e ORACLE_DB_USER=College \
+    -e ORACLE_DB_PASSWORD=Coherence2020
+    --name storage coherence-example-spring-storage:1.0.0-SNAPSHOT
+----
+
+
+=== Run the REST Service
+
+Now run the Spring Boot REST Service. This is a Coherence Extend client application that will connect to the storage application.
+When we started the storage application we exposed the Coherence Extend port 20000 to port 20000 on the host.
+We can configure the REST service to connect to Extend on the local machines IP address.
+
+Run the command below after changing the `extend.host` system property value to the IP address of the local machine.
+
+[Source,bash]
+----
+docker run -it --rm -p 8080:8080 -e JAVA_TOOL_OPTIONS='-Dextend.host=192.168.1.33' rest-service:1.0.0-SNAPSHOT
+----
+
+
+=== Try the REST Service
+
+We can use curl to execute REST commands. The REST service exposed the container port 8080 to port 8080 on the local machine
+so we can connect to that port.
+
+==== First Get a Non-Existent Student
+
+[Source,bash]
+----
+curl -i -w '\n' -X GET http://127.0.0.1:8080/student/foo
+----
+
+which should return a 404 error something like this
+[Source,bash]
+----
+HTTP/1.1 404
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 10 Sep 2020 14:00:30 GMT
+
+{"timestamp":"2020-09-10T14:00:30.416+00:00","status":404,"error":"Not Found","message":"","path":"/student/foo"}
+----
+
+==== Add a New Student
+
+We can do a POST command to add a Student. The API requires the request body to be a json representation of the Student.
+
+For example:
+[Source,json]
+----
+{
+    "firstName":"Aamir",
+    "lastName":"Khan",
+    "className":"drama",
+    "address": {
+        "lineOne":"Freeda Apartments",
+        "lineTwo":"Carter Road, Bandra West",
+        "city":"Mumbai",
+        "postalCode":"123456",
+        "country":"India"
+    }
+}
+----
+
+[Source,bash]
+----
+curl -i -w '\n' -X POST http://127.0.0.1:8080/student \
+    -H "Content-Type: application/json" \
+    -d '{"firstName":"Aamir","lastName":"Khan","className":"drama","address":{"lineOne":"Freeda Apartments","lineTwo":"Carter Road, Bandra West","city":"Mumbai","postalCode":"123456","country":"India"}}'
+----
+
+Which should return something like this:
+[Source,bash]
+----
+HTTP/1.1 201
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 10 Sep 2020 14:08:45 GMT
+
+{"firstName":"Aamir","lastName":"Khan","className":"drama","address":{"lineOne":"Freeda Apartments","lineTwo":"Carter Road, Bandra West","city":"Mumbai","postalCode":"123456","country":"India","evolvableHolder":{"typeIds":[],"empty":true}},"rollNumber":"3161f377-e98c-4a19-8992-05329699088f","evolvableHolder":{"typeIds":[],"empty":true}}
+----
+
+The json returned will show the roll number that has been created as the Student identifier, in this case `3161f377-e98c-4a19-8992-05329699088f`.
+
+==== Get an Existing Student
+
+Now we have added a Student we can execute a GET for that Student using the roll number.
+
+[Source,bash]
+----
+curl -i -w '\n' -X GET http://127.0.0.1:8080/student/3161f377-e98c-4a19-8992-05329699088f
+----
+
+Which this time should return a 200 status and the json representation of the Student.
+[Source,bash]
+----
+HTTP/1.1 200
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Thu, 10 Sep 2020 14:10:51 GMT
+
+{"firstName":"Aamir","lastName":"Khan","className":"drama","address":{"lineOne":"Freeda Apartments","lineTwo":"Carter Road, Bandra West","city":"Mumbai","postalCode":"123456","country":"India","evolvableHolder":{"typeIds":[],"empty":true}},"rollNumber":"3161f377-e98c-4a19-8992-05329699088f","evolvableHolder":{"typeIds":[],"empty":true}}
+----
+
+=== Running in Kubernetes
+
+TBD...
