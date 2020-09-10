@@ -337,6 +337,13 @@ kubectl create -f ./k8s/spring-storage-cluster.yaml
 
 ==== Start the Student REST Service
 
+The Coherence Operator will have create a K8s Service to expose the Extend proxy, this service will be
+called `student-storage-extend`. The DNS name created in Kubernetes for this will
+be `student-storage-extend.<namespace>.svc` where `<namespace>` is the name of the namespace the storage cluster
+was created in. We can use this to set the `extend.host` System property when we run the REST service below.
+In this example we assume that the storage cluster is in a namespace called `sbi` so the Extend service
+name is `student-storage-extend.sbi.svc`.
+
 To start the Spring Boot REST Service use the following yaml:
 [Source,yaml]
 .k8s/spring-storage-cluster.yaml
@@ -395,6 +402,9 @@ kubectl create -f ./k8s/rest-service.yaml
 ----
 
 When the service starts the REST endpoint will be reachable on port 30080 on the node or load balancer.
+
+The same curl commands can now be executed against this host and port.
+
 
 
 
