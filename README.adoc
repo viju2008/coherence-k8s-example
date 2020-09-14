@@ -328,7 +328,7 @@ spec:
     periodSeconds: 10
 ----
 
-The yaml above is in the ./k8s/storage-cluster.yaml[] file.
+The yaml above is in the ./k8s/spring-storage-cluster.yaml[] file.
 Create the storage cluster with the following command:
 [Source,bash]
 ----
