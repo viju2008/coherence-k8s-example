@@ -346,7 +346,7 @@ name is `student-storage-extend.sbi.svc`.
 
 To start the Spring Boot REST Service use the following yaml:
 [Source,yaml]
-.k8s/spring-storage-cluster.yaml
+.k8s/rest-service.yaml
 ----
 apiVersion: apps/v1
 kind: Deployment
