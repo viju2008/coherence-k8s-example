@@ -18,6 +18,9 @@ public class CacheStoreFactory {
         if ("students".equalsIgnoreCase(cacheName)) {
             return ctx.getBean(StudentCacheStore.class);
         }
+		if ("employees".equalsIgnoreCase(cacheName)) {
+            return ctx.getBean(EmployeeCacheStore.class);
+        }
 
         throw new IllegalArgumentException("Cannot create a CacheStore for cache " + cacheName);
     }

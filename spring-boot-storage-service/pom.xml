@@ -12,7 +12,7 @@
    	</parent>
 
     <groupId>org.example</groupId>
-    <artifactId>spring-boot-storage-service</artifactId>
+    <artifactId>spring-boot-storage-service-v</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
@@ -37,7 +37,7 @@
         <!-- Dependency on the domain classes project -->
         <dependency>
             <groupId>com.oracle.coherence.examples</groupId>
-            <artifactId>domain-model</artifactId>
+            <artifactId>domain-model-v</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
@@ -194,7 +194,7 @@
                                 <image>docker://gcr.io/distroless/java:11</image>
                             </from>
                             <to>
-                                <image>coherence-example-spring-storage:${project.version}</image>
+                                <image>coherence-example-spring-storage-v:${project.version}</image>
                             </to>
                             <container>
                                 <mainClass>com.oracle.coherence.examples.storage.StorageApplication</mainClass>

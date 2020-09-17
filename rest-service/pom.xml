@@ -12,7 +12,7 @@
    	</parent>
 
     <groupId>org.example</groupId>
-    <artifactId>rest-service</artifactId>
+    <artifactId>rest-service-v</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
@@ -37,7 +37,7 @@
         <!-- Dependency on the domain classes project -->
         <dependency>
             <groupId>com.oracle.coherence.examples</groupId>
-            <artifactId>domain-model</artifactId>
+            <artifactId>domain-model-v</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 

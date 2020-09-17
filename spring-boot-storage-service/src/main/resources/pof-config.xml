@@ -7,5 +7,6 @@
         <include>coherence-pof-config.xml</include>
         <!-- include student POF user types -->
         <include>student-pof-config.xml</include>
+        <include>employee-pof-config.xml</include>
     </user-type-list>
 </pof-config>
