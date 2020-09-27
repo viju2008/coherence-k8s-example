@@ -79,6 +79,11 @@ public class EmployeeService {
         Employee removed = getCache().remove(id);
         return removed != null;
     }
+    
+   /* public void getWithFilter()
+    {
+    getCache().
+    }*/
 
     private NamedCache<EmployeeId, Employee> getCache() {
         return session.getCache(CACHE_NAME);

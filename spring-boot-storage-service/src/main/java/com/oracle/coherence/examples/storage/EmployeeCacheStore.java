@@ -9,6 +9,7 @@ import com.tangosol.util.filter.EqualsFilter;
 import com.tangosol.util.filter.LikeFilter;
 import com.tangosol.util.Filter;
 import com.tangosol.util.filter.*;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public class EmployeeCacheStore
     }
    
     @SuppressWarnings("unchecked")
-	public static void getCacheByFilter() {
+	public static Map<EmployeeId, Employee> getEmployeeByDept( String methodName, String parameter ) {
 		
 		NamedCache cache = (NamedCache) CacheFactory.getCache("employees");
 		
@@ -58,17 +59,49 @@ public class EmployeeCacheStore
 		//... pass N number of filters
 		AllFilter filter = new AllFilter(new Filter[]{likeFilter, equalsFilter});
 		// getter name of a list in UserBean
-		Filter filterCriteria = new CollectionsAwareFilter("getAddressList", filter);
+	//	Filter filterCriteria = new CollectionsAwareFilter("getAddressList", filter);
 
 		Set<Map.Entry<EmployeeId, Employee>> entries = cache.entrySet(filter);
-		
-		Employee marketData = null;
+		Map<EmployeeId, Employee> map = new HashMap<>();
+
+		Employee empData = null;
 		for (Map.Entry<EmployeeId, Employee> entry : entries) {
-			marketData = entry.getValue();
-			System.out.println(marketData.getEmpId() + " First Name " + marketData.getFirstName());
+			empData = entry.getValue();
+			System.out.println(empData.getEmpId() + " First Name " + empData.getFirstName());
+			map.put(entry.getKey(),entry.getValue());
 			//break;
 		}
+		return map;
 	}
+    
+   /* @SuppressWarnings("unchecked")
+   	public static Map<EmployeeId, Employee> getValuesbyKey( String from_branch_id, String to_branch_id ) {
+   		
+   		NamedCache cache = (NamedCache) CacheFactory.getCache("branch_data");
+   		
+   		//between filter
+   		
+   		Filter filterfrombrcode = new GreaterEqualsFilter("getBranchCode()", from_branch_id);
+   		Filter filtertobrcode = new GreaterEqualsFilter("getBranchCode()", to_branch_id);
+                
+   		
+   		AllFilter filter = new AllFilter(new Filter[] {filterfrombrcode, filtertobrcode});
+   		
+   		// getter name of a list in UserBean
+   	//	Filter filterCriteria = new CollectionsAwareFilter("getAddressList", filter);
+
+   		Set<Map.Entry<BranchId, Branch>> entries = cache.entrySet(filter);
+   		Map<EmployeeId, Employee> map = new HashMap<>();
+
+   		Branch branchData = null;
+   		for (Map.Entry<EmployeeId, Employee> entry : entries) {
+   			branchData = entry.getValue();
+   			System.out.println(branchData.getEmpId() + " First Name " + branchData.getBranchName());
+   			map.put(entry.getKey(),entry.getValue());
+   			//break;
+   		}
+   		return map;
+   	}*/
     
     @Override
     public Map<EmployeeId, Employee> loadAll(Collection<? extends EmployeeId> colKeys) {

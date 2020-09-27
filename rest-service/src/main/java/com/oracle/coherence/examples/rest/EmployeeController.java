@@ -31,6 +31,16 @@ public class EmployeeController {
         }
         return employee;
     }
+    
+    /*
+    @GetMapping("/employee/withFilter")
+    public Employee getemployeeFilter(@PathVariable String m) {
+        Employee employee = service.getEmployee(new EmployeeId(id));
+        if (employee == null) {
+            throw new EmployeeNotFoundException(id);
+        }
+        return employee;
+    }*/
 
     @PostMapping("/employee")
     @ResponseStatus(HttpStatus.CREATED)
