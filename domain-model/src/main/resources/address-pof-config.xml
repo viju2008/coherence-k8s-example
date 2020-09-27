@@ -5,17 +5,10 @@
     <user-type-list>
         <!-- by default just include coherence POF user types -->
         <include>coherence-pof-config.xml</include>
-       <include>address-pof-config.xml</include>
-
 
         <user-type>
-            <type-id>1003</type-id>
-            <class-name>com.oracle.coherence.examples.domain.Employee</class-name>
+            <type-id>1002</type-id>
+            <class-name>com.oracle.coherence.examples.domain.Address</class-name>
         </user-type>
-        <user-type>
-            <type-id>1004</type-id>
-            <class-name>com.oracle.coherence.examples.domain.EmployeeId</class-name>
-        </user-type>
-    
     </user-type-list>
 </pof-config>

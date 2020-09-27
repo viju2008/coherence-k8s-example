@@ -16,6 +16,9 @@ import org.hibernate.annotations.CascadeType;
 
 import static com.oracle.coherence.examples.domain.PofTypes.POF_TYPE_EMPLOYEE;
 
+
+import static com.oracle.coherence.examples.domain.PofTypes.POF_TYPE_EMPLOYEE;
+
 /**
  * @author Jonathan Knight  2020.09.09
  */
@@ -36,6 +39,12 @@ public class Employee {
     @Portable
     private String deptName;
 
+ @OneToOne()
+    @Cascade(CascadeType.ALL)
+    @Portable
+    private Address address;
+
+
  
 
     /**
@@ -45,11 +54,12 @@ public class Employee {
     }
 
     public Employee(String empIdNumber, String firstName, String lastName,
-                   String deptName) {
+                   String deptName, Address addr) {
         this.empId = empIdNumber;
         this.firstName = firstName;
         this.lastName = lastName;
         this.deptName = deptName;
+        this.address=addr;
        
     }
 
@@ -85,6 +95,18 @@ public class Employee {
     public void setDeptName(String deptName) {
         this.deptName = deptName;
     }
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+        if (this.address != null) {
+            this.address.setRoll(this.empId);
+        }
+    }
+
+
 
   
 
@@ -94,6 +116,10 @@ public class Employee {
                 "empIdNumber='" + empId + '\'' +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", deptName='" + deptName + '\'' + '}';
+                 ", deptName='" + deptName + '\'' +
+                ", address=" + address +
+                '}';
+
+
     }
 }

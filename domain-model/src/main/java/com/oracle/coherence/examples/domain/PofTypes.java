@@ -1,3 +1,4 @@
+
 package com.oracle.coherence.examples.domain;
 
 /**

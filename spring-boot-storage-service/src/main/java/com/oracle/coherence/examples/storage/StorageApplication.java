@@ -30,6 +30,7 @@ public class StorageApplication {
 			// Store the Spring ApplicationContext into the ConfigurableCacheFactory resource registry
 			// so that it is accessible later - for example when creating the CacheStore
 			ccf.getResourceRegistry().registerResource(ApplicationContext.class, ctx);
+			System.out.println("\n I am Executing This");
 	        // Start Coherence server - this is a blocking call
 			DefaultCacheServer.main(args);
 		};

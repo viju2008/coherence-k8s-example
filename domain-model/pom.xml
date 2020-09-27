@@ -88,18 +88,7 @@
                 <artifactId>pof-maven-plugin</artifactId>
                 <version>20.06.1</version>
                 <executions>
-                    <execution>
-                        <id>instrument</id>
-                        <goals>
-                            <goal>instrument</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>instrument-tests</id>
-                        <goals>
-                            <goal>instrument-tests</goal>
-                        </goals>
-                    </execution>
+                    
                 </executions>
             </plugin>
 
