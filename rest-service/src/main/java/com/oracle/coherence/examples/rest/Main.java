@@ -3,6 +3,8 @@ package com.oracle.coherence.examples.rest;
 import java.util.UUID;
 
 import com.oracle.coherence.examples.domain.Address;
+import com.oracle.coherence.examples.domain.Employee;
+import com.oracle.coherence.examples.domain.EmployeeId;
 import com.oracle.coherence.examples.domain.Student;
 import com.oracle.coherence.examples.domain.StudentId;
 
@@ -31,5 +33,17 @@ public class Main {
         Student cached = cache.get(id);
         cache.put(id, student);
         System.out.println();
+        
+        String roll2 = UUID.randomUUID().toString();
+        
+        EmployeeId emp_id = new EmployeeId(roll2);
+        Employee emp = new Employee(roll, "Aamir", "Khan", "drama", address);
+        
+        
+        NamedCache<EmployeeId, Employee> cache_emp = CacheFactory.getCache("employees");
+        Employee cached_emp = cache_emp.get(emp_id);
+        cache_emp.put(emp_id, emp);
+        System.out.println();
+        
     }
 }
